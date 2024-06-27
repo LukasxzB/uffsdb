@@ -40,6 +40,11 @@
 (?i:DATABASE)					return DATABASE;
 (?i:DROP)						return DROP;
 (?i:CONTRIBUTORS)               return CONTR;
+(?i:BEGIN)						return BEGINT;
+(?i:END)						return ENDT;
+(?i:COMMIT)						return COMMITT;
+(?i:ROLLBACK)						return ROLLBACKT;
+
 help							return HELP;
 [\\][h]							return HELP;
 [\\][h]+[^\n]*					{invalidCommand(yytext);};

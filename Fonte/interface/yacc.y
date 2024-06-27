@@ -49,12 +49,24 @@ int yywrap() {
         LIST_TABLES LIST_TABLE  CONNECT     HELP        LIST_DBASES
         CLEAR       CONTR       WHERE       OPERADOR    RELACIONAL
         LOGICO      ASTERISCO   SINAL       FECHA_P     ABRE_P
-        STRING      INDEX       ON;
+        STRING      INDEX       ON          BEGINT      ENDT
+        COMMITT     ROLLBACKT
 %%
+
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
-     | help_pls | list_databases | clear | contributors | create_index
+     | help_pls | list_databases | clear | contributors | create_index | transaction
      | qualquer_coisa | /*epsilon*/;
+
+transaction: begin_t | end_t | commit_t | rollback_t;
+
+begin_t: BEGINT semicolon {printf("begin\n"); return 0;};
+
+end_t: ENDT semicolon {printf("end\n"); return 0;}
+
+commit_t: COMMITT semicolon {printf("commit\n"); return 0;}
+
+rollback_t: ROLLBACKT  semicolon {printf("rollback\n"); return 0;}
 
 /*--------------------------------------------------*/
 /**************** GENERAL FUNCTIONS *****************/
