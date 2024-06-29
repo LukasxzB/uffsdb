@@ -25,6 +25,10 @@
    #include "parser.h"
 #endif
 
+#ifndef FTRANSACTION
+   #include "../transaction.h"
+#endif
+
 extern char* yytext[];
 extern FILE * yyin;
 extern FILE* outFile_p;
@@ -60,13 +64,13 @@ start: insert | select | create_table | create_database | drop_table | drop_data
 
 transaction: begin_t | end_t | commit_t | rollback_t;
 
-begin_t: BEGINT semicolon {printf("begin\n"); return 0;};
+begin_t: BEGINT semicolon {startTransaction(); return 0;};
 
-end_t: ENDT semicolon {printf("end\n"); return 0;}
+end_t: ENDT semicolon {commitTransaction(); return 0;}
 
-commit_t: COMMITT semicolon {printf("commit\n"); return 0;}
+commit_t: COMMITT semicolon {commitTransaction(); return 0;}
 
-rollback_t: ROLLBACKT  semicolon {printf("rollback\n"); return 0;}
+rollback_t: ROLLBACKT  semicolon {rollbackTransaction(); return 0;}
 
 /*--------------------------------------------------*/
 /**************** GENERAL FUNCTIONS *****************/
