@@ -2,6 +2,9 @@ prog
 *.dat
 *.o
 Fonte/uffsdb
+Fonte/data
+Fonte/copy
+Fonte/databackup
 Fonte/interface/lex.yy.c
 Fonte/interface/y.tab.c
 Fonte/interface/y.tab.h
