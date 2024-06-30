@@ -1,9 +1,13 @@
-#define FPARSER 1
+#define FTRANSACTION 1
 
 void startTransaction();
 void commitTransaction();
 void rollbackTransaction();
 
-void cloneRepository();
-void discardChanges();
-void applyChanges();
+int isTransactionInProgress();
+
+void gotError();
+
+int cloneRepository();
+int discardChanges();
+int applyChanges();
