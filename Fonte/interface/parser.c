@@ -23,6 +23,9 @@
 #ifndef FPARSER
    #include "parser.h"
 #endif
+#ifndef FTRANSACTION
+   #include "../transaction.h"
+#endif
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
@@ -267,7 +270,9 @@ int interface() {
     while(1){
         if (!connected.conn_active) {
             printf(">");
-        } else {
+        } else if( isTransactionInProgress() ){
+            printf("%s=*# ", connected.db_name);
+        }else {
             printf("%s=# ", connected.db_name);
         }
 
