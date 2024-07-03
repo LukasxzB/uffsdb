@@ -2,6 +2,7 @@
   "files.associations": {
     "parser.h": "c",
     "sqlcommands.h": "c",
-    "dictionary.h": "c"
+    "dictionary.h": "c",
+    "unistd.h": "c"
   }
 }

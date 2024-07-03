@@ -14,6 +14,10 @@
   #include "misc.h"
 #endif
 
+#ifndef FTRANSACTION
+  #include "transaction.h"
+#endif
+
 char connectDB(char *db_name) {
 	FILE *DB;
 	int i;
@@ -40,7 +44,7 @@ char connectDB(char *db_name) {
     }
   }
   fclose(DB);
-
+  gotError();
   return DB_NOT_EXISTS;
 }
 
@@ -54,6 +58,7 @@ void createDB(char *db_name) {
 
   if((DB = fopen("data/DB.dat","a+b")) == NULL) {
     printf("ERROR: cannot open file\n");
+    gotError();
 	  return;
   }
 
@@ -73,6 +78,7 @@ void createDB(char *db_name) {
     	fclose(DB);
 		  if(objcmp(db_name, "uffsdb") != 0) 			// banco de dados ja existe
         printf("ERROR: database already exists\n");
+        gotError();
       return;
     }
   }
@@ -80,6 +86,7 @@ void createDB(char *db_name) {
   if(i >= QTD_DB) {
   	fclose(DB);
   	printf("ERROR: The amount of databases in this machine exceeded the limit.\n");
+    gotError();
   	return;
   }
 
@@ -101,6 +108,7 @@ void createDB(char *db_name) {
 
 	if(system(create) == -1) {			//verifica se foi possivel criar o diretorio
 		printf("ERROR: It was not possible to create the database\n");
+    gotError();
 	}
   else if(objcmp(db_name, "uffsdb") != 0) printf("CREATE DATABASE\n");
   free(SGBD);
@@ -115,11 +123,13 @@ void dropDatabase(char *db_name){
 
   if(strcmp(db_name, connected.db_name) == 0) {
     printf("ERROR: You can not delete the database that you are connected.\n");
+    gotError();
     return;
   }
 
   if((DB = fopen("data/DB.dat","r+b")) == NULL) {
     printf("ERROR: cannot open file\n");
+    gotError();
     return;
   }
 
@@ -147,6 +157,7 @@ void dropDatabase(char *db_name){
   }
   fclose(DB);
   printf("ERROR: database does not exist\n");
+  gotError();
 }
 
 void showDB() {
@@ -159,6 +170,7 @@ void showDB() {
 
     if((DB = fopen("data/DB.dat","r+b")) == NULL) {
        	printf("ERROR: cannot open file\n");
+        gotError();
 		return;
     }
 
@@ -186,6 +198,7 @@ void dbInit(char *db) {
 	char *name;
 	if(system("mkdir data > /dev/null 2>&1") == -1)
 		printf("ERROR: It was not possible to initialize uffsdb\n");
+    gotError();
     if (db==NULL){
 		    name = malloc(sizeof(char)*7);
 		    name[0]='u';name[1]='f';name[2]='f';name[3]='s';

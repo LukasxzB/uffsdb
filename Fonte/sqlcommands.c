@@ -29,6 +29,11 @@
 #ifndef FEXPRESSAO
   #include "Expressao.h"
 #endif
+
+#ifndef FTRANSACTION
+  #include "transaction.h"
+#endif
+
 /* ----------------------------------------------------------------------------------------------
     Objetivo:   Recebe o nome de uma tabela e engloba as funções leObjeto() e leSchema().
     Parametros: Nome da Tabela, Objeto da Tabela e tabela.
@@ -112,6 +117,7 @@ int verifyFK(char *tableName, char *column){
     struct fs_objects objeto = leObjeto(tableName);
     tp_table *esquema = leSchema(objeto),*k;
     if(esquema == ERRO_ABRIR_ESQUEMA){
+      gotError();
       printf("ERROR: cannot create schema.\n");
       return 0;
     }
@@ -149,6 +155,7 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
     if(iniciaAtributos(&objeto, &tabela, &bufferpoll, tabelaApt) != SUCCESS) {
         free(bufferpoll);
         free(tabela);
+        gotError();
         return ERRO_DE_PARAMETRO;
     }
 
@@ -204,6 +211,7 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
                         free(pagina);
                         free(bufferpoll);
                         free(tabela);
+                        gotError();
                         return ERRO_CHAVE_ESTRANGEIRA;
                     }
                 }
@@ -213,6 +221,7 @@ int verificaChaveFK(char *nomeTabela,column *c, char *nomeCampo, char *valorCamp
     if (pagina) free(pagina);
     free(bufferpoll);
     free(tabela);
+    gotError();
     return ERRO_CHAVE_ESTRANGEIRA;
 }
 /* ----------------------------------------------------------------------------------------------
@@ -261,6 +270,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
+                            gotError();
                             return ERRO_CHAVE_PRIMARIA;
                         }
                     } else if (pagina[j].tipoCampo == 'I') {
@@ -270,6 +280,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
+                            gotError();
                             return ERRO_CHAVE_PRIMARIA;
                         }
                     } else if (pagina[j].tipoCampo == 'D'){
@@ -279,6 +290,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
+                            gotError();
                             return ERRO_CHAVE_PRIMARIA;
                         }
                     } else if (pagina[j].tipoCampo == 'C'){
@@ -286,6 +298,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
+                            gotError();
                             return ERRO_CHAVE_PRIMARIA;
                         }
                     }
@@ -344,7 +357,8 @@ int finalizaInsert(char *nome, column *c){
         		if(raiz != NULL) {
         			encontrou = buscaChaveBtree(raiz, temp->valorCampo);
         			if (encontrou) {
-        				printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
+                gotError();
+                printf("ERROR: duplicate key value violates unique constraint \"%s_pkey\"\nDETAIL:  Key (%s)=(%s) already exists.\n",nome,temp->nomeCampo,temp->valorCampo);
         				free(auxT); // Libera a memoria da estrutura.
         				//free(temp); // Libera a memoria da estrutura.
         				free(tab); // Libera a memoria da estrutura.
@@ -370,6 +384,7 @@ int finalizaInsert(char *nome, column *c){
         					  erro = verificaChaveFK(nome, temp, tab2[j].nome, temp->valorCampo,
                                             tab2[j].tabelaApt, tab2[j].attApt);
                     if (erro != SUCCESS){
+                        gotError();
                         printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
 
             						free(auxT); // Libera a memoria da estrutura.
@@ -383,6 +398,7 @@ int finalizaInsert(char *nome, column *c){
                   encontrou = buscaChaveBtree(raizfk, temp->valorCampo);
                   if (!encontrou) {
                     printf("ERROR: invalid reference to \"%s.%s\". The value \"%s\" does not exist.\n", tab2[j].tabelaApt,tab2[j].attApt,temp->valorCampo);
+                    gotError();
 
                     free(auxT); // Libera a memoria da estrutura.
                     free(temp); // Libera a memoria da estrutura.
@@ -402,6 +418,7 @@ int finalizaInsert(char *nome, column *c){
 
     if((dados = fopen(directory,"a+b")) == NULL){
       printf("ERROR: cannot open file.\n");
+      gotError();
   		free(auxT); // Libera a memoria da estrutura.
   		free(temp); // Libera a memoria da estrutura.
       free(tab); // Libera a memoria da estrutura.
@@ -440,6 +457,7 @@ int finalizaInsert(char *nome, column *c){
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
           if (sizeof(auxC->valorCampo) > auxT[t].tam && sizeof(auxC->valorCampo) != 8){
             printf("ERROR: invalid string length.\n");
+            gotError();
 			      free(tab); // Libera a memoria da estrutura.
 			      free(tab2); // Libera a memoria da estrutura.
 			      free(auxT); // Libera a memoria da estrutura.
@@ -450,6 +468,7 @@ int finalizaInsert(char *nome, column *c){
 
           if(objcmp(auxC->nomeCampo, auxT[t].nome) != 0){
             printf("ERROR: column name \"%s\" is not valid.\n", auxC->nomeCampo);
+            gotError();
 			      free(tab); // Libera a memoria da estrutura.
 			      free(tab2); // Libera a memoria da estrutura.
 			      free(auxT); // Libera a memoria da estrutura.
@@ -470,6 +489,7 @@ int finalizaInsert(char *nome, column *c){
           while (i < strlen(auxC->valorCampo)){
             if(auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
               printf("ERROR: column \"%s\" expected integer.\n", auxC->nomeCampo);
+              gotError();
   				    free(tab); // Libera a memoria da estrutura.
   				    free(tab2); // Libera a memoria da estrutura.
   				    free(auxT); // Libera a memoria da estrutura.
@@ -488,6 +508,8 @@ int finalizaInsert(char *nome, column *c){
             while (x < strlen(auxC->valorCampo)){
                 if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
                     printf("ERROR: column \"%s\" expect double.\n", auxC->nomeCampo);
+
+                    gotError();
           					free(tab); // Libera a memoria da estrutura.
           					free(tab2); // Libera a memoria da estrutura.
           					free(auxT); // Libera a memoria da estrutura.
@@ -505,6 +527,7 @@ int finalizaInsert(char *nome, column *c){
 
             if (strlen(auxC->valorCampo) > (sizeof(char))) {
                 printf("ERROR: column \"%s\" expect char.\n", auxC->nomeCampo);
+                gotError();
         				free(tab); // Libera a memoria da estrutura.
         				free(tab2); // Libera a memoria da estrutura.
         				free(auxT); // Libera a memoria da estrutura.
@@ -551,11 +574,13 @@ void insert(rc_insert *s_insert) {
 				}
         else {
 					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", esquema->nome, tabela->nome, esquema->tipo, getInsertedType(s_insert, esquema->nome, tabela));
+          gotError();
 					flag=1;
 				}
 			}
 		}
     else {
+      gotError();
 			flag = 1;
 		}
 	}
@@ -577,11 +602,13 @@ void insert(rc_insert *s_insert) {
 				else {
 					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", tabela->esquema[i].nome, tabela->nome, tabela->esquema[i].tipo, s_insert->type[i]);
 					flag=1;
+          gotError();
 				}
 			}
 		}
     else {
       printf("ERROR: INSERT has more expressions than target columns.\n");
+      gotError();
 		  flag = 1;
 		}
 	}
@@ -621,6 +648,7 @@ int validaProj(Lista *proj,column *colunas,int qtdColunas,char *pert){
   for(Nodo *it = proj->prim; it; it = it->prox,k++){
     if(!validar[k]){
       free(validar);
+      gotError();
       printf("The column from the projection %s does not belong to the table.\n",(char *)it->inf);
       return 0;
     }
@@ -667,6 +695,7 @@ int validaColsWhere(Lista *tok,column *colunas,int qtdColunas){
         achou = (strcmp(str,colunas[j].nomeCampo) == 0);
       if(!achou){
         printf("The column %s does not belong to the table.\n",str);
+        gotError();
         return 0;
       }
     }
@@ -760,12 +789,14 @@ Lista *op_select(inf_select *select) {
   struct fs_objects objeto;
   if(!verificaNomeTabela(select->tabela)){
     printf("\nERROR: relation \"%s\" was not found.\n\n\n", select->tabela);
+    gotError();
     return NULL;
   }
   objeto = leObjeto(select->tabela);
   esquema = leSchema(objeto);
   if(esquema == ERRO_ABRIR_ESQUEMA){
     printf("ERROR: schema cannot be created.\n");
+    gotError();
     free(esquema);
     return NULL;
   }
@@ -774,6 +805,7 @@ Lista *op_select(inf_select *select) {
     free(bufferpoll);
     free(esquema);
     printf("ERROR: no memory available to allocate buffer.\n");
+    gotError();
     return NULL;
   }
   int erro = SUCCESS,x;
@@ -808,6 +840,7 @@ Lista *op_select(inf_select *select) {
     pagina = getPage(bufferpoll, esquema, objeto, p);
     if(pagina == ERRO_PARAMETRO){
       printf("ERROR: could not open the table.\n");
+      gotError();
       free(bufferpoll);
       free(esquema);
       return NULL;
@@ -877,6 +910,7 @@ int procuraSchemaArquivo(struct fs_objects objeto){
 
     if((newSchema = fopen(directory, "a+b")) == NULL) {
         free(tupla);
+        gotError();
         return ERRO_REMOVER_ARQUIVO_SCHEMA;
     }
 
@@ -959,6 +993,7 @@ int excluirTabela(char *nomeTabela) {
 
     if (!verificaNomeTabela(nomeTabela)) {
         printf("ERROR: table \"%s\" does not exist.\n", nomeTabela);
+        gotError();
         return ERRO_NOME_TABELA;
     }
 
@@ -1008,6 +1043,7 @@ int excluirTabela(char *nomeTabela) {
                     for(l=0; l<objeto1.qtdCampos; l++) {
                         if(tab3[l].chave == FK) { //verifica se a outra tabela possui chave estrangeira. se sim, verifica se e da tabela anterior.
                             if(objcmp(nomeTabela, tab3[l].tabelaApt) == 0) {
+                              gotError();
                                 printf("ERROR: cannot drop table \"%s\" because other objects depend on it.\n", nomeTabela);
                                 return ERRO_CHAVE_ESTRANGEIRA;
                             }
@@ -1037,6 +1073,7 @@ int excluirTabela(char *nomeTabela) {
     tp_buffer *bufferpoll = initbuffer();
     if(bufferpoll == ERRO_DE_ALOCACAO){
         printf("ERROR: no memory available to allocate buffer.\n");
+        gotError();
         return ERRO_LEITURA_DADOS;
     }
 
@@ -1070,6 +1107,7 @@ int verifyFieldName(char **fieldName, int N){
         for(j=i+1; j < N; j++){
             if(objcmp(fieldName[i], fieldName[j]) == 0){
                 printf("ERROR: column \"%s\" specified more than once\n", fieldName[i]);
+                gotError();
                 return 0;
             }
         }
@@ -1081,6 +1119,7 @@ int verifyFieldName(char **fieldName, int N){
 void createTable(rc_insert *t) {
   if(strlen(t->objName) > TAMANHO_NOME_TABELA){
       printf("A table name must have no more than %d caracteres.\n",TAMANHO_NOME_TABELA);
+      gotError();
       return;
   }
   int size;
@@ -1091,6 +1130,7 @@ void createTable(rc_insert *t) {
   strncpylower(tableName, t->objName, TAMANHO_NOME_TABELA);
   strcat(tableName, ".dat\0");                  //tableName.dat
   if(existeArquivo(tableName)){
+    gotError();
     printf("ERROR: table already exist\n");
     free(tableName);
     return;
@@ -1125,6 +1165,7 @@ void createTable(rc_insert *t) {
     if((objcmp(fkTable, "") != 0) || (objcmp(fkColumn, "") != 0)){
       if(verifyFK(fkTable, fkColumn) == 0){
   		  printf("ERROR: attribute FK cannot be referenced\n");
+        gotError();
         free(tableName);
         freeTable(tab);
         return;
@@ -1148,6 +1189,7 @@ void createTable(rc_insert *t) {
   	printf("CREATE TABLE\n");
   } else { //Tabela já existe, então não é preciso criar o índice b+.
 	  printf("ERROR: table already exist\n");
+    gotError();
   }
 
   free(tableName);
@@ -1163,6 +1205,7 @@ void createIndex(rc_insert *t) {
 
   if (!verificaNomeTabela(t->objName)) {
     printf("ERROR: table \"%s\" does not exist.\n", t->objName);
+    gotError();
     return;
   }
 
@@ -1173,6 +1216,7 @@ void createIndex(rc_insert *t) {
     if(strcmp(aux->nome, t->columnName[0]) == 0) { //Procura o atributo na tabela
       if(aux->chave == PK) {// Se o atributo é PK já possui índice criado automaticamente
         printf("ERROR: attribute \"%s\" already has a b+ index.\n", t->columnName[0]);
+        gotError();
         return;
       }
       flag = 1;
@@ -1181,6 +1225,7 @@ void createIndex(rc_insert *t) {
 
   if (!flag) {
     printf("ERROR: attribute \"%s\" does not exist on table %s.\n", t->columnName[0], t->objName);
+    gotError();
     return;
   }
 
@@ -1191,6 +1236,7 @@ void createIndex(rc_insert *t) {
 
   if ((f = fopen(dir,"r")) != NULL){
     printf("ERROR: B+ index file already exists.\n");
+    gotError();
     return;
   }
 

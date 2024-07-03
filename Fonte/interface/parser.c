@@ -50,15 +50,18 @@ void connect(char *nome) {
     printf("You are now connected to database \"%s\" as user \"uffsdb\".\n", nome);
   }
   else {
+    gotError();
   	printf("ERROR: Failed to establish connection with database named \"%s\". (Error code: %d)\n", nome, r);
   }
 }
 
 void invalidCommand(char *command) {
+    gotError();
     printf("ERROR: Invalid command '%s'. Type \"help\" for help.\n", command);
 }
 
 void notConnected() {
+    gotError();
     printf("ERROR: you are not connected to any database.\n");
 }
 
@@ -322,6 +325,7 @@ int interface() {
             }
         } else {
             GLOBAL_PARSER.consoleFlag = 1;
+            gotError();
             switch(GLOBAL_PARSER.mode) {
                 case OP_CREATE_DATABASE:
                 case OP_DROP_DATABASE:
